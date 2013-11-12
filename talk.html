@@ -1,64 +1,100 @@
 <!DOCTYPE html>
 
 <html>
-  <head>
+<head>
     <title>Hadoop</title>
 
     <meta charset='utf-8'>
     <script src='http://html5slides.googlecode.com/svn/trunk/slides.js'></script>
-  </head>
+</head>
 
-  <style>
+<style>
     /* Your individual styles here, or just use inline styles if that’s
-       what you want. */
+    what you want. */
 
     section { background: rgb(70,86,84); }
 
-  </style>
+</style>
 
-  <body style='display: none'>
+<body style='display: none'>
 
-    <section class='slides layout-widescreen'>
+<section class='slides layout-widescreen'>
 
-      <article>
-        <h1>Hadoop</h1>
-        <p>
-          Mathias Rüdiger
-          <br>
-          14.11.2013
-        </p>
-      </article>
+<article>
+    <h1>Hadoop</h1>
 
-      <article>
-        <h3>What is Hadoop</h3>
-      </article>
+    <p>
+        Mathias Rüdiger
+        <br>
+        14.11.2013
+    </p>
+</article>
 
-      <article>
-        <h3>Parts of Hadoop</h3>
-        <ul>
-          <li>NameNode</li>
-          <li>HDFS</li>
-        </ul>
-      </article>
+<article>
+    <h3>What is Hadoop</h3>
 
-      <article>
-        <h3>Steps of a Hadoop job (0/7)</h3>
+    <ul>
+        <li>intended to handle BIG data (Petabytes)</li>
+        <li>MapReduce is not just <code>map()</code> and <code>reduce()</code></li>
+        <li>not a Database</li>
+    </ul>
 
-        <h4>WordCount example</h4>
-        <ul>
-          <li>Hadoop's <code>"Hello World\n"</code> </li>
-          <li>count unique words in a text file</li>
-        </ul>
-      </article>
+    <ul>
+        <li>one of my favorite hacks in the history of computing</li>
+    </ul>
+</article>
 
-      <article>
-        <h3>Steps of a Hadoop job (1/7)</h3>
-        <h4>record reader</h4>
-      </article>
+<article>
+    <h3>HDFS</h3>
+    <ul>
+        <li>designed for very large files</li>
+        <li>write once, read many</li>
+    </ul>
 
-      <article>
-        <h3>Steps of a Hadoop job (2/7)</h3>
-        <h4>map</h4>
+    <ul>
+        <li>64MB Blocks</li>
+        <li>split in Namenode and Datanodes</li>
+        <li>distance metric given through network topology</li>
+    </ul>
+</article>
+
+<article>
+    <h3>DataFlow</h3>
+
+    <ul>
+        <li>jobtrackers and tasktrackers</li>
+        <li>on map task per input-spilt (64MB block per default)</li>
+        <li>map tasks are run where the data is</li>
+        <li>data gathered by reduce tasks</li>
+        <li>number of resulting files = numbers of reducers</li>
+    </ul>
+</article>
+
+<article>
+    <h3>Steps of a Hadoop job (0/7)</h3>
+
+    <h4>WordCount example</h4>
+    <ul>
+        <li>Hadoop's <code>"Hello World\n"</code></li>
+        <li>count unique words in a text file</li>
+    </ul>
+</article>
+
+<article>
+    <h3>Steps of a Hadoop job (1/7)</h3>
+    <h4>record reader</h4>
+    <ul>
+        <li>TextInputFormat</li>
+        <li>KeyValueTextInputFormat</li>
+        <li>SequenceFileInputFormat</li>
+        <li>SequenceFileAsBinaryInputFormat</li>
+        <li>...</li>
+    </ul>
+</article>
+
+<article>
+    <h3>Steps of a Hadoop job (2/7)</h3>
+    <h4>map</h4>
         <pre>@Override
 protected void map(LongWritable linenumber, Text line, Context context)
    throws IOException, InterruptedException {
@@ -69,72 +105,134 @@ protected void map(LongWritable linenumber, Text line, Context context)
 
    while ( tokenizer.hasMoreTokens() ) {
          word.set(tokenizer.nextToken());
-         context.write(word, new IntWritable(1));
+         context.write(word, new LongWritable(1));
    }
 }</pre>
 
-      </article>
+</article>
 
-      <article>
-        <h3>Steps of a Hadoop job (3/7)</h3>
-        <h4>combiner</h4>
-      </article>
+<article>
+    <h3>Steps of a Hadoop job (3/7)</h3>
+    <h4>combiner</h4>
+    <ul>
+        <li>optional localized reducer</li>
+        <li>can result in high performance gain</li>
+    </ul>
+</article>
 
-      <article>
-        <h3>Steps of a Hadoop job (4/7)</h3>
-        <h4>partitioner</h4>
-      </article>
-
-      <article>
-        <h3>Steps of a Hadoop job (5/7)</h3>
-        <h4>shuffle and sort</h4>
-      </article>
-
-      <article>
-        <h3>Steps of a Hadoop job (6/7)</h3>
-        <h4>reduce</h4>
+<article>
+    <h3>Steps of a Hadoop job (4/7)</h3>
+    <h4>partitioner</h4>
         <pre>@Override
-protected void reduce(Text key, Iterable<IntWritable> values, Context context)
+public int getPartition(Text key, LongWritable value, int numReduceTasks) {
+   int hash = key.hashCode();
+   return (hash & Integer.MAX_VALUE) % numReduceTasks;
+}</pre>
+    <ul>
+        <li>randomly distributes keys over the reducers</li>
+        <li>ensures that equivalent keys are handled by the same reducer</li>
+        <li>rarely implemented individually</li>
+    </ul>
+</article>
+
+<article>
+    <h3>Steps of a Hadoop job (5/7)</h3>
+    <h4>shuffle and sort</h4>
+    <ul>
+        <li>downloads all data to reducer</li>
+        <li>group equivalent keys by sorting</li>
+        <li>uses <code>Comparable</code> interface</li>
+        <li>can use different grouping and sorting comparators</li>
+    </ul>
+</article>
+
+<article>
+    <h3>Steps of a Hadoop job (6/7)</h3>
+    <h4>reduce</h4>
+        <pre>@Override
+protected void reduce(Text key, Iterable&lt;LongWritable&gt; values, Context context)
    throws IOException, InterruptedException {
 
    long sum = 0l;
 
-   for (IntWritable value : values) {
-      sum++;
+   for (LongWritable value : values) {
+      sum += value.get();
    }
    context.write(key, new LongWritable(sum));
 }</pre>
-      </article>
+</article>
+<article>
+    <h3>Steps of a Hadoop job (7/7)</h3>
+    <h4>output format</h4>
+    <ul>
+        <li>TextOutputFormat</li>
+        <li>SequenceFileOutputFormat</li>
+        <li>SequenceFileAsBinaryOutputFormat</li>
+    </ul>
+</article>
 
-      <article>
-        <h3>Steps of a Hadoop job (7/7)</h3>
-        <h4>output format</h4>
+<article>
+    <h3>Where to run your first Job</h3>
 
-        <ul>
-          <li>TextOutputFormat</li>
-          <li>SequenceFileOutputFormat</li>
-        </ul>
-      </article>
+    <p>
+        There is no point in runnig it locally
+    </p>
 
+    <ul>
+        <li>hard to set up</li>
+        <li>needs multiple machines to make sense</li>
+        <li>for testing, use Mockito (you should do so anyways)</li>
+    </ul>
+</article>
 
+<article>
+    <h3>Pitfalls</h3>
+    <ul>
+        <li>mapred vs. mapreduce API change</li>
+        <li>Generics vs. Reflection</li>
+    </ul>
+</article>
 
-      <article>
-        <h3>
-          Thank you!
-        </h3>
-        <p>
-          Mathias Rüdiger
-          <br>
-          m.ruediger@d3media.de
-        </p>
+<article>
+    <h3>Tipps</h3>
 
-        <p>
-          examples and slides at
-          <br>
-          <a href='http://github.com/d3media/hadoop-talk'>github.com/d3media/hadoop-talk</a>
-      </article>
+    <ul>
+        <li>write tests to prevent the pitfalls (MRUnit)</li>
+        <li>upload your changes using a CI system</li>
+        <li>write a custom script to start your cluster</li>
+    </ul>
+</article>
 
-    </section>
+<article>
+    <h3>Tricks</h3>
 
-  </body>
+    <ul>
+        <li>combine multiple MR Jobs</li>
+        <li>run Mappers without reducers</li>
+        <li>run Reducers with multiple Mappers</li>
+    </ul>
+</article>
+
+<article class='end'>
+    <h3>
+        Thank you!
+    </h3>
+
+    <p>
+        Mathias Rüdiger
+        <br>
+        m.ruediger@d3media.de
+    </p>
+
+    <p>
+        examples and slides at
+        <br>
+        <a href='http://github.com/d3media/hadoop-talk'>github.com/d3media/hadoop-talk</a>
+    </p>
+
+    <img class='centered' style='margin-right:0; height: 350px' src='qrcode.png'>
+</article>
+</section>
+
+</body>
 </html>

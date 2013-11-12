@@ -8,5 +8,5 @@ import java.io.IOException;
 public interface JobSelector {
     String getName();
 
-    void run(Configuration conf, Path input, Path output) throws IOException;
+    void run(Configuration conf, Path input, Path output) throws IOException, ClassNotFoundException, InterruptedException;
 }

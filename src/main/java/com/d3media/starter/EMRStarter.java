@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class EMRStarter {
 
-    public static void main(String args[]) throws IOException, IllegalAccessException, InstantiationException {
+    public static void main(String args[]) throws IOException, IllegalAccessException, InstantiationException, InterruptedException, ClassNotFoundException {
         Configuration conf = new Configuration();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
 
@@ -24,8 +24,8 @@ public class EMRStarter {
             if (job.getName().equals(jobselection)) {
                 System.out.println("starting job " + job.getName());
                 job.run(conf,
-                    new Path(otherArgs[1]),
-                    new Path(otherArgs[2]));
+                        new Path(otherArgs[1]),
+                        new Path(otherArgs[2]));
             }
         }
     }
