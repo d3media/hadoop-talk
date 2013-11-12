@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Hadoop</title>
+
+    <meta charset='utf-8'>
+    <script src='http://html5slides.googlecode.com/svn/trunk/slides.js'></script>
+  </head>
+
+  <style>
+    /* Your individual styles here, or just use inline styles if that’s
+       what you want. */
+
+    section { background: rgb(70,86,84); }
+
+  </style>
+
+  <body style='display: none'>
+
+    <section class='slides layout-widescreen'>
+
+      <article>
+        <h1>Hadoop</h1>
+        <p>
+          Mathias Rüdiger
+          <br>
+          14.11.2013
+        </p>
+      </article>
+
+      <article>
+        <h3>What is Hadoop</h3>
+      </article>
+
+      <article>
+        <h3>Parts of Hadoop</h3>
+        <ul>
+          <li>NameNode</li>
+          <li>HDFS</li>
+        </ul>
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (0/7)</h3>
+
+        <h4>WordCount example</h4>
+        <ul>
+          <li>Hadoop's <code>"Hello World\n"</code> </li>
+          <li>count unique words in a text file</li>
+        </ul>
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (1/7)</h3>
+        <h4>record reader</h4>
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (2/7)</h3>
+        <h4>map</h4>
+        <pre>@Override
+protected void map(LongWritable linenumber, Text line, Context context)
+   throws IOException, InterruptedException {
+
+   StringTokenizer tokenizer = new StringTokenizer(line.toString());
+
+   Text word = new Text();
+
+   while ( tokenizer.hasMoreTokens() ) {
+         word.set(tokenizer.nextToken());
+         context.write(word, new IntWritable(1));
+   }
+}</pre>
+
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (3/7)</h3>
+        <h4>combiner</h4>
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (4/7)</h3>
+        <h4>partitioner</h4>
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (5/7)</h3>
+        <h4>shuffle and sort</h4>
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (6/7)</h3>
+        <h4>reduce</h4>
+        <pre>@Override
+protected void reduce(Text key, Iterable<IntWritable> values, Context context)
+   throws IOException, InterruptedException {
+
+   long sum = 0l;
+
+   for (IntWritable value : values) {
+      sum++;
+   }
+   context.write(key, new LongWritable(sum));
+}</pre>
+      </article>
+
+      <article>
+        <h3>Steps of a Hadoop job (7/7)</h3>
+        <h4>output format</h4>
+
+        <ul>
+          <li>TextOutputFormat</li>
+          <li>SequenceFileOutputFormat</li>
+        </ul>
+      </article>
+
+
+
+      <article>
+        <h3>
+          Thank you!
+        </h3>
+        <p>
+          Mathias Rüdiger
+          <br>
+          m.ruediger@d3media.de
+        </p>
+
+        <p>
+          examples and slides at
+          <br>
+          <a href='http://github.com/d3media/hadoop-talk'>github.com/d3media/hadoop-talk</a>
+      </article>
+
+    </section>
+
+  </body>
+</html>
