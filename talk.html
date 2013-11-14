@@ -63,7 +63,7 @@
 
     <ul>
         <li>jobtrackers and tasktrackers</li>
-        <li>on map task per input-spilt (64MB block per default)</li>
+        <li>one map task per input-split (64MB block per default)</li>
         <li>map tasks are run where the data is</li>
         <li>data gathered by reduce tasks</li>
         <li>number of resulting files = numbers of reducers</li>
@@ -175,7 +175,7 @@ protected void reduce(Text key, Iterable&lt;LongWritable&gt; values, Context con
     <h3>Where to run your first Job</h3>
 
     <p>
-        There is no point in runnig it locally
+        There is no point in running it locally
     </p>
 
     <ul>
